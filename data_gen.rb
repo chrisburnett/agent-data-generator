@@ -27,12 +27,14 @@ class DataGen
     # agent lists
     @consumers = []
     @providers = []
+    @interactions = []
     
     Parameters::PROVIDER_TYPES.each do |id, type| 
       type[:count].times do
         @providers << Provider.new(type)
       end
     end
+
     Parameters::CONSUMER_TYPES.each do |id, type| 
       type[:count].times do
         @consumers << Consumer.new(type)
@@ -45,13 +47,30 @@ class DataGen
     
   end
 
+  def do_interaction(consumer, provider)
+    
+  end
+
   # main loop  
   def generate
 
     Parameters::TIME_STEPS.times do |t|
       @consumers_available.each do |consumer| 
         if rand < Parameters::INTERACTION_PROBABILITY
-          puts "interaction"
+          # select a random partner - for evaluation, call to
+          # evaluation/decision-making module could go here
+          provider = @providers_available[rand(@providers_available.length)]
+          # remove both agents from available list hopefully won't
+          # cause a concurrent editing exception
+          @consumers_available.delete(consumer)
+          @providers_available.delete(provider)
+          # add this interaction as ongoing with full 'life'
+          @interactions << { 
+            consumer: consumer, 
+            provider: provider, 
+            life: Parameters::TASK_DURATION 
+          }
+          do_interaction(consumer, provider)
         end
       end
       

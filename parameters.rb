@@ -3,6 +3,10 @@ module Parameters
   TIME_STEPS = 1000
   INTERACTION_PROBABILITY = 0.8
   
+  # making this a constant for now, but it could easily be a function
+  # for another lovely degree of uncertainty
+  TASK_DURATION = 10
+  
   # noise determines how much each sample will be perturbed either up
   # or down (maximally)
 
