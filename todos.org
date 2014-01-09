@@ -1,0 +1,146 @@
+#+TITLE: Data simulation for time-series trust assessment evaluation
+
+* Overview
+  Need some data to evaluate Gurleen’s time-series trust thingumabob.
+
+Would be good to be able to generate some time-series agent
+performance data. We have:
+
+
+  1. Agents that perform tasks.
+  2. Agents that observe performers and provide ratings about their
+     performance.
+
+Question: Not sure what form the ratings will take if we are now
+looking at time-series type trust. For example, a rating should really
+be based on the previous time step and be valid for the next
+one. We’re saying “This is how to trust the agent in the next time
+step given what you’ve said you already saw”. Something like
+that. Or.. could the rating be a function? Question for Tim.
+
+Now we want to generate some data.
+
+Performers represented as functions Performing agents have functions
+for generating their time-based behaviour. Functions like ‘good for a
+while then bad intermittently’ or ‘always bad but very occasionally
+brilliant’ - stuff like that. Or sine waves, saw waves…. etc.
+
+Observers have two performance dimensions Observers observe with
+varying frequency and accuracy - but then they compile down to ratings
+anyway (not the concern of the data generator - you can have as much
+of a look inside the black box as you want)
+
+Add all this to the usual agent show and that should be that - some
+data.
+
+* TODO Implement performer agents
+
+** Agent performance as a stochastic function
+   Noisy sine? Something like that? Should be predictable...
+
+*** TODO how to get noisy functions of times
+
+    Well, we could just have some functions with parameters - sine,
+    cosine, or combinations of them. Easy to add some random noise.
+
+    The performance of an agent over time is a function of the time
+    point since the beginning of the simulation. When agents
+    delegate, they get the behaviour during the "window" of the delegation.
+
+* TODO Implement consumer agents
+  Consumer agents are dumb, and pick partners at random.
+  
+* TODO Implement rep-provider agents
+  We don't need to do evaluating/decision-making agents because we're
+  just generating data for Gurleen to use.
+
+** Reputation provision as a function of time
+   Hmm... to simulate this we need to implement reputation provision -
+   so it's not so simple. Need to makes some decisions.
+
+   - Reputation request format :: Target and time step.
+     
+   - Reputation response format ::  Providers respond
+        with *ratings*. Those ratings are valid for the current time
+        step. That is, we're assuming that time is an essential part
+        of context.
+
+** Simulation variables
+   Providers vary in *accuracy* and *frequency*
+
+*** TODO Classes of provider
+
+* TODO Implement sim and data capture/vis
+  What would need to change in the sim?
+
+  Time is now a factor we need to consider. Tasks are not static -
+  they have a lifetime. So we're not talking about time since the
+  start of the sim, but time since the start of the task. We could go
+  even further and use more context, like using the difference between
+  the time that delivery was promised and where we are now, but I
+  think that for now we don't need that.
+
+  Probably just better to start from scratch to do this.
+
+  At a given time step, consumer agents (dumb) just pick a partner and
+  delegate. Delegation proceeds over a number of time steps, during
+  which the consumer makes a number of observations at times and of
+  accuracy according to its class. 
+
+  That's it... I think.
+
+** TODO Frequency/accuracy of in-task reputational query
+   Agents might ask for time-specific ratings during task
+   execution. Like asking "what do you guys think about this agent's
+   performance at this time point, should I carry on or stop?"
+
+   So, the consumers themselves could have a frequency parameter that
+   determines how often they do this. Maybe not necessary for this
+   evaluation.
+
+** TODO Task duration
+   We need a task duration - we'll fix that, let's say 10 TS.
+
+** TODO Main sim algorithm
+   How does the sim/data generator proceed?
+
+   First off, what data do we want?
+
+   We want (I think)... a history of agent delegation interactions,
+   where each agent has a memory of its subjective observations of
+   the performances of those it delegated to. 
+
+   - each time step
+     - each *available* (i.e. not delegating/delegated) agent picks a
+       partner at random and delegates, with probability
+       [interaction_prob]
+     - interacting agents are removed from the pool of possible
+       delegators/delegatees until delegation completes
+     - during delegation:
+       - trustee generates an outcome each time step from its
+         performance function, this is recorded centrally (ground
+         truth)
+       - trustor observes (or doesn't) this value (stochastically) at
+         each time step in the delegation - this is recorded in the
+         agent's "memory"
+       - the end?
+
+   Parameters/variables:
+   
+   + time steps to run
+   + interaction probability
+   + no. consumer agents
+   + no. rep-providers (same as consumers?)
+   + no. provider agents
+   + provider classes
+     - service function
+   + consumer classes
+     - observation frequency
+     - observation accuracy
+
+       
+    
+
+   
+
+
