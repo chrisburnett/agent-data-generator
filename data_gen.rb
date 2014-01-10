@@ -36,13 +36,13 @@ class DataGen
     @providers = []
     @interactions = []
     
-    Parameters::PROVIDER_TYPES.each do |id, type| 
+    Parameters::PROVIDER_TYPES.each do |type| 
       type[:count].times do |n| 
         @providers << Agent.new(type, "P#{n}")
       end
     end
 
-    Parameters::CONSUMER_TYPES.each do |id, type| 
+    Parameters::CONSUMER_TYPES.each do |type| 
       type[:count].times do |n| 
         @consumers << Agent.new(type, "C#{n}")
       end
@@ -86,7 +86,9 @@ class DataGen
                       0,
                       "delegation_start",
                       interaction[:consumer].id,
+                      interaction[:consumer].type[:class],
                       interaction[:provider].id,
+                      interaction[:provider].type[:class],
                       "",
                       "",
                       "",
@@ -134,7 +136,9 @@ class DataGen
                       it,
                       "observation",
                       interaction[:consumer].id,
+                      interaction[:consumer].type[:class],
                       interaction[:provider].id,
+                      interaction[:provider].type[:class],
                       interaction[:consumer].type[:noise],
                       interaction[:provider].type[:noise],
                       subj_ob
@@ -154,7 +158,9 @@ class DataGen
                       it,
                       "delegation_end",
                       interaction[:consumer].id,
+                      interaction[:consumer].type[:class],
                       interaction[:provider].id,
+                      interaction[:provider].type[:class],
                       "",
                       "",
                       "",
