@@ -1,11 +1,11 @@
 require_relative 'parameters'
-require_relative 'consumer'
-require_relative 'provider'
+require 'csv'
 
 class Agent
-  attr_accessor :type
-  def initialize(type)
+  attr_accessor :type, :id
+  def initialize(type, id)
     @type = type
+    @id = id
   end
 end
 
@@ -37,14 +37,14 @@ class DataGen
     @interactions = []
     
     Parameters::PROVIDER_TYPES.each do |id, type| 
-      type[:count].times do
-        @providers << Agent.new(type)
+      type[:count].times do |n| 
+        @providers << Agent.new(type, "P#{n}")
       end
     end
 
     Parameters::CONSUMER_TYPES.each do |id, type| 
-      type[:count].times do
-        @consumers << Agent.new(type)
+      type[:count].times do |n| 
+        @consumers << Agent.new(type, "C#{n}")
       end
     end
     
@@ -52,10 +52,9 @@ class DataGen
     @providers_available = @providers.dup
     @consumers_available = @consumers.dup
     
-  end
+    # output file
+    @output = CSV.open("data/#{Date.today.iso8601}-data.csv", "w")
 
-  def do_interaction(consumer, provider)
-    
   end
 
   # main loop  
@@ -73,41 +72,102 @@ class DataGen
           # cause a concurrent editing exception
           @consumers_available.delete(consumer)
           @providers_available.delete(provider)
-          # add this interaction as ongoing with full 'life'
-          @interactions << { 
+
+          # create this interaction as ongoing with full 'life'
+          interaction = { 
             consumer: consumer, 
             provider: provider, 
             life: Parameters::TASK_DURATION 
           }
+
+          # record that an interaction started
+          @output << [
+                      t,
+                      0,
+                      "delegation_start",
+                      interaction[:consumer].id,
+                      interaction[:provider].id,
+                      "",
+                      "",
+                      "",
+                     ]
+          
+          # add to ongoing interactions list
+          @interactions << interaction
+          
         end
       end
 
       # service 'live' interactions
       @interactions.each do |interaction| 
-
-        # every pair with time on the clock consumer might sample, if
-        # it does it's perturbed
-        # record outcome to file and decrement life
-        # cleanup dead interactions
-        
+        # objective and subjective observation - might not be made
+        # NOTE for now, only subjective (consumer) observation is
+        # recorded
+        ob = ""
+        subj_ob = ""
+        # every pair with time on the clock consumer might sample
         if rand < interaction[:consumer].type[:monitor_prob]
-          ob = interaction[:provider].type[:function].call(t)
+          # sample and perturb according to provider class
+          sample = interaction[:provider].type[:function].call(t)
+          noise = interaction[:provider].type[:noise]/2
+          ob = rand(sample-noise..sample+noise)
+          # perturb again for observer inaccuracy
           noise = interaction[:consumer].type[:noise]/2
           # subjective observation with noise applied
-          subj_ob = rand(ob+noise..ob-noise)
+          subj_ob = rand(ob-noise..ob+noise)
+
+          # write observation to file
+          # Output columns:
+          # timestep
+          # interaction timestep
+          # event id (?)
+          # event type (delegation start/end or observation)
+          # consumer id
+          # provider id
+          # provider noise (from profile)
+          # consumer noise (from profile - for convenience)
+          # objective_observation (null if start/end del event)
+          # subjective_observation (null of not observed)
+          it = Parameters::TASK_DURATION - interaction[:life]
+          @output << [
+                      t,
+                      it,
+                      "observation",
+                      interaction[:consumer].id,
+                      interaction[:provider].id,
+                      interaction[:consumer].type[:noise],
+                      interaction[:provider].type[:noise],
+                      subj_ob
+                     ]
         end
         
+        # decrement life
         interaction[:life] = interaction[:life] - 1
+
+        # cleanup dead interactions and return agents to pool
         if interaction[:life] == 0
+          @consumers_available << interaction[:consumer]
+          @providers_available << interaction[:provider]
           @interactions.delete(interaction)
+          @output << [
+                      t,
+                      it,
+                      "delegation_end",
+                      interaction[:consumer].id,
+                      interaction[:provider].id,
+                      "",
+                      "",
+                      "",
+                     ]
         end
       end
-      
     end
+    # close output file
+    @output.flush
+    @output.close
   end
-  
+
   data_generator = DataGen.new
   data_generator.generate
 
 end
-

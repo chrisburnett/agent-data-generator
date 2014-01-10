@@ -1,6 +1,6 @@
 module Parameters
 
-  TIME_STEPS = 1000
+  TIME_STEPS = 10
   INTERACTION_PROBABILITY = 0.8
   
   # making this a constant for now, but it could easily be a function
