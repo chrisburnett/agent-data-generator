@@ -15,14 +15,14 @@ module Parameters
     sine: { function: -> (t) { Math.sin(t)}, noise: 0, count: 50 }
   }
   
-  # Monitor_freq determines how many observations will be made during
-  # the delegation. Accuracy value determines by how much each value
-  # will be maximally perturbed either up or down.
+  # Monitor_prob determines how likely observations will be made
+  # during the delegation. Noise value determines by how much each
+  # value will be maximally perturbed either up or down.
 
   CONSUMER_TYPES = {
-    vigilant: { monitor_freq: 10, accuracy: 0.2, count: 25 },
-    negligent: { monitor_freq: 2, accuracy: 1, count: 25 },
-    mediocre: { monitor_freq: 5, accuracy: 0.8, count: 25 }
+    vigilant: { monitor_prob: 0.95, noise: 0.1, count: 25 },
+    negligent: { monitor_prob: 0.2, noise: 0.4, count: 25 },
+    mediocre: { monitor_prob: 0.5, noise: 0.2, count: 25 }
   }
   
     

@@ -2,6 +2,13 @@ require_relative 'parameters'
 require_relative 'consumer'
 require_relative 'provider'
 
+class Agent
+  attr_accessor :type
+  def initialize(type)
+    @type = type
+  end
+end
+
 class DataGen
 
   # init
@@ -31,13 +38,13 @@ class DataGen
     
     Parameters::PROVIDER_TYPES.each do |id, type| 
       type[:count].times do
-        @providers << Provider.new(type)
+        @providers << Agent.new(type)
       end
     end
 
     Parameters::CONSUMER_TYPES.each do |id, type| 
       type[:count].times do
-        @consumers << Consumer.new(type)
+        @consumers << Agent.new(type)
       end
     end
     
@@ -55,6 +62,8 @@ class DataGen
   def generate
 
     Parameters::TIME_STEPS.times do |t|
+
+      # create new interactions
       @consumers_available.each do |consumer| 
         if rand < Parameters::INTERACTION_PROBABILITY
           # select a random partner - for evaluation, call to
@@ -70,7 +79,27 @@ class DataGen
             provider: provider, 
             life: Parameters::TASK_DURATION 
           }
-          do_interaction(consumer, provider)
+        end
+      end
+
+      # service 'live' interactions
+      @interactions.each do |interaction| 
+
+        # every pair with time on the clock consumer might sample, if
+        # it does it's perturbed
+        # record outcome to file and decrement life
+        # cleanup dead interactions
+        
+        if rand < interaction[:consumer].type[:monitor_prob]
+          ob = interaction[:provider].type[:function].call(t)
+          noise = interaction[:consumer].type[:noise]/2
+          # subjective observation with noise applied
+          subj_ob = rand(ob+noise..ob-noise)
+        end
+        
+        interaction[:life] = interaction[:life] - 1
+        if interaction[:life] == 0
+          @interactions.delete(interaction)
         end
       end
       
@@ -81,3 +110,4 @@ class DataGen
   data_generator.generate
 
 end
+
