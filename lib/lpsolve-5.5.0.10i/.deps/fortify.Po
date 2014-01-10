@@ -1,1 +1,0 @@
-fortify.o fortify.o: fortify.c
