@@ -18,10 +18,11 @@ module Parameters
   # noise determines how much each sample will be perturbed either up
   # or down (maximally)
   PROVIDER_TYPES = [
-    { class: :sawtooth, function: -> (t) { t - t.floor }, noise: 0, count: 50 },
-    { class: :sine, function: -> (t) { Math.sin(t)}, noise: 0, count: 50 },
-    { class: :random, function: -> (t) { rand >= 0.5 ? 1 : 0 }, noise: 0, count: 10 }
-  ]
+                    { class: :sawtooth, function: -> (t) { t - t.floor }, noise: 0, count: 50 },
+                    { class: :sine, function: -> (t) { 0.5*Math.sin(t)+1 }, noise: 0, count: 50 },
+                    { class: :random, function: -> (t) { rand >= 0.5 ? 1 : 0 }, noise: 0, count: 10 },
+                    { class: :onoff, function: -> (t) { Math.sin(t) > 0 ? 1 : 0 }}
+                   ]
   
   # Monitor_prob determines how likely observations will be made
   # during the delegation. Noise value determines by how much each
